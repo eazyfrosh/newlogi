@@ -17,7 +17,9 @@ See `.env.example` for a description of every application environment variable. 
 
 ## Vercel deployment
 
-Import this repository into Vercel and set the project’s Node.js runtime to 22.x or newer. Add the variables from `.env.example` in the Vercel project settings. Set `NEXT_PUBLIC_APP_URL` to the canonical HTTPS site URL. Deploy the rules to the Firebase project named by `FIREBASE_PROJECT_ID` before enabling customer traffic. The app uses Next.js route handlers and Firebase managed services, so there is no separate API server or local file persistence.
+Import this repository into Vercel with the repository root as the Root Directory. The included `vercel.json` selects the Next.js framework and its `.next` build output, so Vercel does not treat `public/` as the build output. The project pins Node.js to 22.x. Leave the Build Command on its detected default (`next build` / `npm run build`); do not change the Framework Preset to Other or set the Output Directory to `public`.
+
+Add the variables from `.env.example` in the Vercel project settings. Set `NEXT_PUBLIC_APP_URL` to the canonical HTTPS site URL. Deploy the rules to the Firebase project named by `FIREBASE_PROJECT_ID` before enabling customer traffic. The app uses Next.js route handlers and Firebase managed services, so there is no separate API server or local file persistence.
 
 Transactional email is optional. Set `RESEND_API_KEY` and `EMAIL_FROM` to enable quote confirmations and staff invitation messages. Quote requests and contact messages still save to Firestore without an email provider. The sender domain must be configured with Resend before messages can be delivered.
 
