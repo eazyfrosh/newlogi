@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // All application reads/writes go through verified Next.js handlers.
+    // This prevents clients from bypassing server role and ownership checks.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
