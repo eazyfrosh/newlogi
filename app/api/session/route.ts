@@ -23,13 +23,15 @@ export async function POST(request: NextRequest) {
         "This account has been suspended. Contact the NewLogi team.",
         403,
       );
-    const email = String(decoded.email ?? "").toLowerCase();
-    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.toLowerCase();
-    const role = userSnap.exists
-      ? (userSnap.data()?.role ?? "customer")
-      : email && superAdminEmail && email === superAdminEmail
-        ? "super_admin"
-        : "customer";
+    const email = String(decoded.email ?? "").trim().toLowerCase();
+    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
+    const isSuperAdmin = Boolean(
+      email && superAdminEmail && email === superAdminEmail,
+    );
+    const existingRole = userSnap.data()?.role;
+    const role = isSuperAdmin
+      ? "super_admin"
+      : existingRole ?? "customer";
     await userRef.set(
       {
         uid: decoded.uid,
@@ -57,8 +59,12 @@ export async function POST(request: NextRequest) {
       maxAge: expiresIn / 1000,
     });
     return response;
-  } catch {
-    return jsonError("Unable to start a session. Please sign in again.", 401);
+  } catch (error) {
+    console.error("[api/session] Failed to create session:", error);
+    return jsonError(
+      "Firebase accepted your sign-in, but NewLogi could not create your session. Check the Firebase Admin credentials and Firestore access in Vercel, then retry.",
+      500,
+    );
   }
 }
 

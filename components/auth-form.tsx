@@ -38,8 +38,10 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         body: JSON.stringify({ idToken, name }),
       });
       const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.error ?? "Unable to create a secure session.");
+      if (!response.ok) {
+        setError(data.error ?? "Unable to create a secure session.");
+        return;
+      }
       router.push(data.role === "customer" ? "/dashboard" : "/admin");
       router.refresh();
     } catch (e) {
@@ -57,7 +59,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               ? "An account already exists for this email."
               : code.includes("weak-password")
                 ? "Choose a password with at least 6 characters."
-                : "We couldn't sign you in. Check your details and try again.",
+                : code.includes("network-request-failed")
+                  ? "Could not reach Firebase. Check your connection and try again."
+                  : "We couldn't sign you in. Check your details and try again.",
       );
     } finally {
       setBusy(false);
