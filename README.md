@@ -7,7 +7,7 @@ A responsive logistics site and customer workspace built with the Next.js App Ro
 1. Install Node.js 22 or newer.
 2. Copy `.env.example` to `.env.local` and fill in the Firebase project settings.
 3. In Firebase Console, enable Email/Password Authentication and create a Firestore database.
-4. Create a Firebase service account for server operations. Keep its private key on the server only. In `.env.local`, put the private key in `FIREBASE_PRIVATE_KEY` and replace embedded newlines with `\n`.
+4. Create a Firebase service account for server operations. Keep its private key on the server only. In `.env.local`, either set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` separately (replace embedded newlines in the key with `\n`), or set `FIREBASE_SERVICE_ACCOUNT_JSON` to the complete service-account JSON.
 5. Set `SUPER_ADMIN_EMAIL` to the email address that will bootstrap the first super admin, then register that exact address at `/register`. Later accounts receive the customer role.
 6. Create a **private** Vercel Blob store from the Vercel project’s Storage section. Connect it to Production and Preview; include Development if you will upload files during local development. Vercel supplies `BLOB_READ_WRITE_TOKEN` to the connected environments.
 7. Deploy Firestore indexes and rules with `firebase deploy --only firestore` after selecting the intended Firebase project. Database access goes through server-side authorization checks.
