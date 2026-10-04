@@ -919,14 +919,28 @@ function ProfileForm({
 export function AdminPortal() {
   const [data, setData] = useState<AdminData | null>(null);
   const [error, setError] = useState("");
+  const [errorTitle, setErrorTitle] = useState("Admin workspace unavailable");
   const [tab, setTab] = useState("overview");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
   async function load() {
+    setError("");
+    setErrorTitle("Admin workspace unavailable");
     try {
       const r = await fetch("/api/admin/overview", { cache: "no-store" });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error);
+      const j = await r.json().catch(() => null);
+      if (!r.ok) {
+        setErrorTitle(
+          r.status === 401 || r.status === 403
+            ? "Admin access required"
+            : "Admin workspace unavailable",
+        );
+        throw new Error(
+          j?.error ??
+            `The admin service returned HTTP ${r.status}. Check Vercel Runtime Logs for /api/admin/overview.`,
+        );
+      }
+      if (!j) throw new Error("The admin service returned an empty response.");
       setData(j);
     } catch (e) {
       setError(
@@ -991,12 +1005,24 @@ export function AdminPortal() {
         <main className="content-narrow" style={{ paddingTop: 100 }}>
           <Empty
             icon={ShieldCheck}
-            title="Admin access required"
+            title={errorTitle}
             text={error}
             action={
-              <Link className="button button-dark" href="/login">
-                Sign in <ArrowRight size={15} />
-              </Link>
+              errorTitle === "Admin access required" ? (
+                <Link className="button button-dark" href="/login">
+                  Sign in <ArrowRight size={15} />
+                </Link>
+              ) : (
+                <button
+                  className="button button-dark"
+                  onClick={() => {
+                    setLoading(true);
+                    void load();
+                  }}
+                >
+                  Try again <ArrowRight size={15} />
+                </button>
+              )
             }
           />
         </main>

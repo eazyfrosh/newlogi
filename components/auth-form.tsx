@@ -37,11 +37,16 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken, name }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        setError(data.error ?? "Unable to create a secure session.");
+        setError(
+          data?.error ??
+            `The server returned HTTP ${response.status} while starting your session. Check Vercel Runtime Logs for /api/session.`,
+        );
         return;
       }
+      if (!data)
+        throw new Error("The server returned an empty response while starting your session.");
       router.push(data.role === "customer" ? "/dashboard" : "/admin");
       router.refresh();
     } catch (e) {
