@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { AdminShipmentPanel } from "@/components/admin-shipment-panel";
 import type { AdminWorkspaceData } from "@/components/workspace-types";
+import { uploadShipmentDocument } from "@/components/upload-shipment-document";
 import {
   InvoiceAdmin,
   PeopleAdmin,
@@ -1753,17 +1754,18 @@ function ShipmentAdmin({
             onSubmit={async (e) => {
               e.preventDefault();
               if (!upload) return;
-              const fd = new FormData();
-              fd.set("shipmentId", selected);
-              fd.set("file", upload);
-              const response = await fetch("/api/admin/documents", {
-                method: "POST",
-                body: fd,
-              });
-              const j = await response.json();
-              setResult(response.ok ? "Document uploaded securely." : j.error);
-              setUpload(null);
-              await loadAgain();
+              try {
+                await uploadShipmentDocument(upload, selected, false);
+                setResult("Document uploaded to private Vercel Blob storage.");
+                setUpload(null);
+                await loadAgain();
+              } catch (error) {
+                setResult(
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to upload this document.",
+                );
+              }
             }}
           >
             <label>

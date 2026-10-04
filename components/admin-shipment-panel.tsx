@@ -12,6 +12,7 @@ import type {
   AdminWorkspaceData,
   WorkspaceRow,
 } from "@/components/workspace-types";
+import { uploadShipmentDocument } from "@/components/upload-shipment-document";
 
 const statuses = [
   "Shipment Created",
@@ -103,37 +104,8 @@ export function AdminShipmentPanel({
     if (!file) return;
     setNotice("");
     try {
-      const prep = await fetch("/api/admin/documents/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shipmentId: selected,
-          name: file.name,
-          contentType: file.type,
-          size: file.size,
-        }),
-      });
-      const uploadInfo = await prep.json();
-      if (!prep.ok) throw new Error(uploadInfo.error);
-      const put = await fetch(uploadInfo.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!put.ok) throw new Error("The file upload failed. Try again.");
-      const response = await fetch("/api/admin/documents/finalize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shipmentId: selected,
-          path: uploadInfo.path,
-          name: uploadInfo.name,
-          visibleToCustomer: visible,
-        }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      setNotice("Document uploaded to private storage.");
+      await uploadShipmentDocument(file, selected, visible);
+      setNotice("Document uploaded to private Vercel Blob storage.");
       setFile(null);
       await refresh();
     } catch (e) {
